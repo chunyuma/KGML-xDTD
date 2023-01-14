@@ -1,0 +1,11 @@
+name: graphsage_p2.7env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=2.7.18
+  - networkx=1.11
+  - numpy=1.16.6
+  - pip
+  - tensorboard=1.8.0
+  - tensorflow=1.8.0

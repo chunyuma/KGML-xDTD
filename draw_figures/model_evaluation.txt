@@ -1,0 +1,145 @@
+method	model	metric	value
+drug_rank	TransE	MRR	0.03507887
+drug_rank	TransE	Hit@1	0.01258741
+drug_rank	TransE	Hit@3	0.02750583
+drug_rank	TransE	Hit@5	0.04382284
+disease_rank	TransE	MRR	0.02324781
+disease_rank	TransE	Hit@1	0.00652681
+disease_rank	TransE	Hit@3	0.01771562
+disease_rank	TransE	Hit@5	0.02843823
+combined_rank	TransE	MRR	0.00328265
+combined_rank	TransE	Hit@1	0.0004662
+combined_rank	TransE	Hit@3	0.0009324
+combined_rank	TransE	Hit@5	0.0009324
+drug_rank	TransR	MRR	0.01128217
+drug_rank	TransR	Hit@1	0.0013986
+drug_rank	TransR	Hit@3	0.00606061
+drug_rank	TransR	Hit@5	0.00885781
+disease_rank	TransR	MRR	0.01203309
+disease_rank	TransR	Hit@1	0.0018648
+disease_rank	TransR	Hit@3	0.00606061
+disease_rank	TransR	Hit@5	0.01072261
+combined_rank	TransR	MRR	0.00392453
+combined_rank	TransR	Hit@1	0.0004662
+combined_rank	TransR	Hit@3	0.0013986
+combined_rank	TransR	Hit@5	0.0018648
+drug_rank	RotatE	MRR	0.02081537
+drug_rank	RotatE	Hit@1	0.00512821
+drug_rank	RotatE	Hit@3	0.01818182
+drug_rank	RotatE	Hit@5	0.02377622
+disease_rank	RotatE	MRR	0.01503031
+disease_rank	RotatE	Hit@1	0.0032634
+disease_rank	RotatE	Hit@3	0.00839161
+disease_rank	RotatE	Hit@5	0.01631702
+combined_rank	RotatE	MRR	0.00232022
+combined_rank	RotatE	Hit@1	0.0
+combined_rank	RotatE	Hit@3	0.0
+combined_rank	RotatE	Hit@5	0.0013986
+drug_rank	DistMult	MRR	0.00601588
+drug_rank	DistMult	Hit@1	0.0013986
+drug_rank	DistMult	Hit@3	0.0032634
+drug_rank	DistMult	Hit@5	0.0041958
+disease_rank	DistMult	MRR	0.00839669
+disease_rank	DistMult	Hit@1	0.0004662
+disease_rank	DistMult	Hit@3	0.00512821
+disease_rank	DistMult	Hit@5	0.00979021
+combined_rank	DistMult	MRR	0.00082251
+combined_rank	DistMult	Hit@1	0.0
+combined_rank	DistMult	Hit@3	0.0
+combined_rank	DistMult	Hit@5	0.0
+drug_rank	ComplEx	MRR	0.00592742
+drug_rank	ComplEx	Hit@1	0.0004662
+drug_rank	ComplEx	Hit@3	0.002331
+drug_rank	ComplEx	Hit@5	0.0037296
+disease_rank	ComplEx	MRR	0.00215391
+disease_rank	ComplEx	Hit@1	0.0
+disease_rank	ComplEx	Hit@3	0.0009324
+disease_rank	ComplEx	Hit@5	0.0009324
+combined_rank	ComplEx	MRR	0.00062001
+combined_rank	ComplEx	Hit@1	0.0
+combined_rank	ComplEx	Hit@3	0.0
+combined_rank	ComplEx	Hit@5	0.0
+drug_rank	ANALOGY	MRR	0.00517367
+drug_rank	ANALOGY	Hit@1	0.0009324
+drug_rank	ANALOGY	Hit@3	0.002331
+drug_rank	ANALOGY	Hit@5	0.0037296
+disease_rank	ANALOGY	MRR	0.01169205
+disease_rank	ANALOGY	Hit@1	0.0009324
+disease_rank	ANALOGY	Hit@3	0.00652681
+disease_rank	ANALOGY	Hit@5	0.01305361
+combined_rank	ANALOGY	MRR	0.00086163
+combined_rank	ANALOGY	Hit@1	0.0
+combined_rank	ANALOGY	Hit@3	0.0
+combined_rank	ANALOGY	Hit@5	0.0
+drug_rank	SimplE	MRR	0.00511504
+drug_rank	SimplE	Hit@1	0.0009324
+drug_rank	SimplE	Hit@3	0.0032634
+drug_rank	SimplE	Hit@5	0.0032634
+disease_rank	SimplE	MRR	0.00695383
+disease_rank	SimplE	Hit@1	0.0004662
+disease_rank	SimplE	Hit@3	0.0032634
+disease_rank	SimplE	Hit@5	0.00512821
+combined_rank	SimplE	MRR	0.0007143
+combined_rank	SimplE	Hit@1	0.0
+combined_rank	SimplE	Hit@3	0.0
+combined_rank	SimplE	Hit@5	0.0
+drug_rank	GraphSAGE-link	MRR	0.00606726
+drug_rank	GraphSAGE-link	Hit@1	0.00606061
+drug_rank	GraphSAGE-link	Hit@3	0.00606061
+drug_rank	GraphSAGE-link	Hit@5	0.00606061
+disease_rank	GraphSAGE-link	MRR	0.01028788
+disease_rank	GraphSAGE-link	Hit@1	0.01025641
+disease_rank	GraphSAGE-link	Hit@3	0.01025641
+disease_rank	GraphSAGE-link	Hit@5	0.01025641
+combined_rank	GraphSAGE-link	MRR	0.0051325
+combined_rank	GraphSAGE-link	Hit@1	0.00512821
+combined_rank	GraphSAGE-link	Hit@3	0.00512821
+combined_rank	GraphSAGE-link	Hit@5	0.00512821
+drug_rank	GraphSAGE+logistic	MRR	0.00000460
+drug_rank	GraphSAGE+logistic	Hit@1	0.0
+drug_rank	GraphSAGE+logistic	Hit@3	0.0
+drug_rank	GraphSAGE+logistic	Hit@5	0.0
+disease_rank	GraphSAGE+logistic	MRR	0.00010615
+disease_rank	GraphSAGE+logistic	Hit@1	0.0
+disease_rank	GraphSAGE+logistic	Hit@3	0.0
+disease_rank	GraphSAGE+logistic	Hit@5	0.0
+combined_rank	GraphSAGE+logistic	MRR	0.00000352
+combined_rank	GraphSAGE+logistic	Hit@1	0.0
+combined_rank	GraphSAGE+logistic	Hit@3	0.0
+combined_rank	GraphSAGE+logistic	Hit@5	0.0
+drug_rank	KGML-DTPD w/o NAEs	MRR	0.02030991
+drug_rank	KGML-DTPD w/o NAEs	Hit@1	0.01258741
+drug_rank	KGML-DTPD w/o NAEs	Hit@3	0.01958042
+drug_rank	KGML-DTPD w/o NAEs	Hit@5	0.02424242
+disease_rank	KGML-DTPD w/o NAEs	MRR	0.02154112
+disease_rank	KGML-DTPD w/o NAEs	Hit@1	0.00745921
+disease_rank	KGML-DTPD w/o NAEs	Hit@3	0.01678322
+disease_rank	KGML-DTPD w/o NAEs	Hit@5	0.02750583
+combined_rank	KGML-DTPD w/o NAEs	MRR	0.00169636
+combined_rank	KGML-DTPD w/o NAEs	Hit@1	0.0009324
+combined_rank	KGML-DTPD w/o NAEs	Hit@3	0.0009324
+combined_rank	KGML-DTPD w/o NAEs	Hit@5	0.0009324
+drug_rank	2-class KGML-DTPD	MRR	0.10101362
+drug_rank	2-class KGML-DTPD	Hit@1	0.06620047
+drug_rank	2-class KGML-DTPD	Hit@3	0.10815851
+drug_rank	2-class KGML-DTPD	Hit@5	0.12913753
+disease_rank	2-class KGML-DTPD	MRR	0.05312572
+disease_rank	2-class KGML-DTPD	Hit@1	0.02843823
+disease_rank	2-class KGML-DTPD	Hit@3	0.05268065
+disease_rank	2-class KGML-DTPD	Hit@5	0.06713287
+combined_rank	2-class KGML-DTPD	MRR	0.01319878
+combined_rank	2-class KGML-DTPD	Hit@1	0.00512821
+combined_rank	2-class KGML-DTPD	Hit@3	0.00979021
+combined_rank	2-class KGML-DTPD	Hit@5	0.01351981
+drug_rank	KGML-DTPD	MRR	0.13457757
+drug_rank	KGML-DTPD	Hit@1	0.09184149
+drug_rank	KGML-DTPD	Hit@3	0.14079254
+drug_rank	KGML-DTPD	Hit@5	0.17109557
+disease_rank	KGML-DTPD	MRR	0.07831913
+disease_rank	KGML-DTPD	Hit@1	0.04428904
+disease_rank	KGML-DTPD	Hit@3	0.07878788
+disease_rank	KGML-DTPD	Hit@5	0.1048951
+combined_rank	KGML-DTPD	MRR	0.02158758
+combined_rank	KGML-DTPD	Hit@1	0.00932401
+combined_rank	KGML-DTPD	Hit@3	0.01771562
+combined_rank	KGML-DTPD	Hit@5	0.02284382

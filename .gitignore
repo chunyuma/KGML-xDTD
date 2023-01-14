@@ -1,0 +1,16 @@
+# macOS hidden files
+**/.DS_store
+.DS_store
+
+# ipython notebook checkpoints
+**/.ipynb_checkpoints/
+.ipynb_checkpoints/
+
+# cache files
+**/.web_cache
+.web_cache/
+**/__pycache__/
+__pycache__/
+
+# python compiled files
+*.pyc

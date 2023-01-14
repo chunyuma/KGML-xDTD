@@ -1,0 +1,38 @@
+name: main_env
+channels:
+  - pytorch
+  - dglteam
+  - bioconda
+  - conda-forge
+  - defaults
+  - anaconda
+dependencies:
+  - python=3.8.12
+  - graph-tool=2.44
+  - networkx=2.7
+  - numpy=1.21
+  - pytorch=1.10.2
+  - requests=2.27.1
+  - pip
+  - setuptools=58.0.4
+  - transformers
+  - xmltodict
+  - nltk
+  - pattern
+  - pip:
+    - beautifulsoup4
+    - biopython
+    - gdown==4.6.0
+    - hummingbird-ml==0.4.2
+    - ipykernel
+    - ipython
+    - neo4j==4.4.1
+    - pandas
+    - requests-cache
+    - scikit-learn==1.0.2
+    - scipy==1.8.0
+    - seaborn
+    - pyyaml==6.0
+    - treelib==1.6.1
+    - tensorboard==2.8.0
+    - tqdm
