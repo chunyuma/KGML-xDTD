@@ -1,4 +1,4 @@
-# Code for Paper: "KGML-DTPD: A Knowledge Graph-based Machine Learning Framework for Drug Treatment Prediction and Description"
+# Code for Paper: "KGML-xDTD: A Knowledge Graph-based Machine Learning Framework for Drug Treatment Prediction and Mechanism Description"
 
 ## Set up required running environment
 
