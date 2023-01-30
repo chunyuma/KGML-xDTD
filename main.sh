@@ -10,11 +10,6 @@ export neo4j_password='neo4j' ## if this password doesn't work, please refer to 
 export neo4j_bolt='bolt://localhost:7687'
 ## For an alternative method, you can copy and paste the above lines into ~/.profile file on your linux machine
 
-## set up kg building parameters
-database_name='customized_rtxkg2c.db'
-neo4j_config='./neo4j-community-3.5.26/conf/neo4j.conf'
-path_tsv_folder='./bkg_rtxkg2c_v2.7.3/tsv_files'
-
 ## set up hyperparameters for drug repurposing model training
 pair_emb_method='concatenate'
 
@@ -37,38 +32,29 @@ factor=0.9
 
 ##########################################################################
 
-## build kg with neo4j
-bash ${work_folder}/bkg_rtxkg2c_v2.7.3/scripts/shell_scripts/read_bkg_to_neo4j.sh ${database_name} ${neo4j_config} ${path_tsv_folder}
-
-## restart neo4j
-neo4j_command=`echo ${neo4j_config} | sed 's/conf\/neo4j.conf/bin\/neo4j/'`
-${neo4j_command} restart
-
-## add indexes and constraints to the graph database
-python ${work_folder}/bkg_rtxkg2c_v2.7.3/scripts/python_scripts/create_indexes_contrains.py
-
 ## create required folders
 if [ ! -d "${work_folder}/data" ]
 then:
-		mkdir ${work_folder}/data
+	mkdir ${work_folder}/data
 fi
 if [ ! -d "${work_folder}/log_folder" ]
 then
-		mkdir ${work_folder}/log_folder
+	mkdir ${work_folder}/log_folder
 fi
 if [ ! -d "${work_folder}/models" ]
 then
-		mkdir ${work_folder}/models
+	mkdir ${work_folder}/models
 fi
 if [ ! -d "${work_folder}/results" ]
 then
-		mkdir ${work_folder}/results
+	mkdir ${work_folder}/results
 fi
 
 ## move training data to data folder
 mv ${work_folder}/training_data.tar.gz ${work_folder}/data
 cd ${work_folder}/data
 tar zxvf training_data.tar.gz
+rm training_data.tar.gz
 cd ${work_folder}
 mv ${work_folder}/indication_paths.yaml ${work_folder}/data
 
