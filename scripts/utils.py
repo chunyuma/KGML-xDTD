@@ -18,6 +18,7 @@ from neo4j import GraphDatabase
 from sklearn.metrics import f1_score
 from models import Transition
 plt.switch_backend('agg')
+from node_synonymizer import NodeSynonymizer
 
 SELF_LOOP_RELATION = 'SELF_LOOP_RELATION'
 DUMMY_RELATION = 'DUMMY_RELATION'
@@ -320,7 +321,7 @@ def set_random_seed(seed):
 
 def get_logger(logname):
     logger = logging.getLogger(logname)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     formatter = logging.Formatter('%(asctime)s  [%(levelname)s]  %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
     ch = logging.StreamHandler(sys.stdout)
     ch.setFormatter(formatter)

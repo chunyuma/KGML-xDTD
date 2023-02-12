@@ -7,15 +7,10 @@ import pickle as pk
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
-from torch.autograd import Variable
 from torch.distributions import Categorical
 import copy
 
 import utils
-from kg_env import KGEnvironment
-from knowledge_graph import KnowledgeGraph
-import numpy as np
 
 Transition = namedtuple('Transition', ['state', 'action_space', 'action', 'reward', 'next_state', 'next_action_space'])
 SavedOutput = namedtuple('SavedOutput', ['actor_probs', 'critic_qs', 'log_prob_action', 'q_action', 'entropy'])

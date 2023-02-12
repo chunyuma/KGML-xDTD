@@ -1,36 +1,24 @@
-## This script is modified from the code used in the original ADAC RL model (Zhao et al. doi: 10.1145/3397271.3401171)
+import os, sys
+import eval_utilities
 import torch
-import utils
-import numpy as np
 
 class KGEnvironment(object):
-    def __init__(self, args, pre_train_model, kg, max_path_len=3, state_pre_history=1):
+    def __init__(self, args, kg, max_path_len=3, state_pre_history=1):
         self.args = args
         self.max_num_nodes = max_path_len + 1
         self.kg = kg
         self.state_pre_history = state_pre_history
-        self.pre_train_model = pre_train_model
-        # self.reward_shaping_threshold = args.reward_shaping_threshold
-        self.pre_train_model_embeddings = utils.get_graphsage_embedding(args)
-        self.pre_train_model_embeddings.requires_grad = False
-        # self.pre_train_model_embeddings = self.kg.entity_embeddings.weight.clone().detach().type(torch.float)
-        # self.pre_train_model_embeddings.requires_grad = False
-
-        self.pre_train_model.model.eval()
-        utils.detach_module(self.pre_train_model.model)
 
         ## Current episode information.
         self._batch_path = None
         self._batch_curr_action_spaces = None
         self._batch_curr_state = None
-        self._batch_curr_reward = None
         self._done = False
 
     def reset(self):
         self._batch_path = None
         self._batch_curr_action_spaces = None
         self._batch_curr_state = None
-        self._batch_curr_reward = None
         self._done = False    
 
     def pad_and_cat_action_space(self, action_spaces, inv_offset):
@@ -39,9 +27,9 @@ class KGEnvironment(object):
             db_r_space.append(r_space)
             db_e_space.append(e_space)
             db_action_mask.append(action_mask)
-        r_space = utils.pad_and_cat(db_r_space, padding_value=self.kg.dummy_r)[inv_offset]
-        e_space = utils.pad_and_cat(db_e_space, padding_value=self.kg.dummy_e)[inv_offset]
-        action_mask = utils.pad_and_cat(db_action_mask, padding_value=0)[inv_offset]
+        r_space = eval_utilities.pad_and_cat(db_r_space, padding_value=self.kg.dummy_r)[inv_offset]
+        e_space = eval_utilities.pad_and_cat(db_e_space, padding_value=self.kg.dummy_e)[inv_offset]
+        action_mask = eval_utilities.pad_and_cat(db_action_mask, padding_value=0)[inv_offset]
         action_space = ((r_space, e_space), action_mask)
         return action_space
 
@@ -110,11 +98,11 @@ class KGEnvironment(object):
             else:
                 action_mask_b = action_space[1][g_bucket_ids].cpu()
             if self.args.use_gpu:
-                last_r_b = last_r[l_batch_refs].to(self.args.device)
+                last_r_b = last_r[l_batch_refs].cuda()
             else:
                 last_r_b = last_r[l_batch_refs]
             if self.args.use_gpu:
-                seen_nodes_b = seen_nodes[l_batch_refs].to(self.args.device)
+                seen_nodes_b = seen_nodes[l_batch_refs].cuda()
             else:
                 seen_nodes_b = seen_nodes[l_batch_refs]
             action_space_b = ((r_space_b, e_space_b), action_mask_b)
@@ -130,50 +118,6 @@ class KGEnvironment(object):
         path_len = batch_path[0].shape[1]
         return [batch_path[1][:,0], batch_path[0][:,max(0, path_len-self.state_pre_history-1):], batch_path[1][:,max(0, path_len-self.state_pre_history-1):]]
 
-    def prob(self, e1, pred_e2):
-        if self.args.use_gpu is True:
-            X = torch.cat([self.pre_train_model_embeddings[e1],self.pre_train_model_embeddings[pred_e2]], dim=1).to(self.args.device)
-        else:
-            X = torch.cat([self.pre_train_model_embeddings[e1],self.pre_train_model_embeddings[pred_e2]], dim=1)
-        # return torch.tensor(self.pre_train_model.predict_proba(X)[:, 1])
-        return torch.tensor((np.argmax(self.pre_train_model.predict_proba(X), axis=1) == 1).astype(float) * self.pre_train_model.predict_proba(X)[:,1])
-
-    def reward_fun(self, e1, e2, pred_e2):
-        if self.args.use_gpu:
-            hit_disease_reward = ((pred_e2.to(self.args.device).unsqueeze(1) == torch.tensor(self.args.disease_ids).to(self.args.device)).sum(dim=1) > 0).float()
-            real_reward = self.prob(e1, pred_e2).to(self.args.device)
-            # real_reward_mask = (real_reward >= self.reward_shaping_threshold).float().to(self.args.device)
-            # real_reward = real_reward * real_reward_mask * hit_disease_reward
-            real_reward[hit_disease_reward == 0] = -1.0 ## if the last node is not disease, set -1.0
-            binary_reward = (pred_e2.to(self.args.device) == e2.to(self.args.device)).float()
-            return binary_reward * self.args.tp_reward + (1 - binary_reward) * real_reward
-        else:
-            hit_disease_reward = ((pred_e2.unsqueeze(1) == torch.tensor(self.args.disease_ids)).sum(dim=1) > 0).float()
-            real_reward = self.prob(e1, pred_e2)
-            # real_reward_mask = (real_reward >= self.reward_shaping_threshold).float()
-            # real_reward = real_reward * real_reward_mask * hit_disease_reward
-            real_reward[hit_disease_reward == 0] = -1.0 ## if the last node is not disease, set -1.0
-            binary_reward = (pred_e2 == e2).float()
-            return binary_reward * self.args.tp_reward + (1 - binary_reward) * real_reward
-
-    def _batch_get_reward(self, batch_path):
-
-        if not self._done:
-            return np.zeros(batch_path[1].shape[0])
-
-        if self.target_ids is not None:
-            source_ids = batch_path[1][:,0]        
-            target_ids = self.target_ids
-            pred_ids = batch_path[1][:,-1]
-            batch_reward = self.reward_fun(source_ids, target_ids, pred_ids)
-
-            if self.args.use_gpu:
-                return batch_reward.cpu().numpy()
-            else:
-                return batch_reward.numpy()
-        else:
-            # print(f"Warning: No target ids provided to calculate reward")
-            return np.zeros(batch_path[1].shape[0])
 
     def _is_done(self):
         """Episode ends only if max path length is reached."""
@@ -195,13 +139,12 @@ class KGEnvironment(object):
         self._done = False
         self._batch_curr_state = self._batch_get_state(self._batch_path)
         if self.args.use_gpu:
-            utils.empty_gpu_cache(self.args)
+            eval_utilities.empty_gpu_cache(self.args)
         self._batch_curr_action_spaces = self._batch_get_actions(self._batch_path)
         if self.args.use_gpu:
-            utils.empty_gpu_cache(self.args)
-        self._batch_curr_reward = self._batch_get_reward(self._batch_path)
+            eval_utilities.empty_gpu_cache(self.args)
         if self.args.use_gpu:
-            utils.empty_gpu_cache(self.args)
+            eval_utilities.empty_gpu_cache(self.args)
 
     def batch_step(self, true_next_act, offset=None):
         next_relation_ids, next_entity_ids = true_next_act
@@ -221,10 +164,9 @@ class KGEnvironment(object):
         self._done = self._is_done()
         self._batch_curr_state = self._batch_get_state(self._batch_path)
         if self.args.use_gpu:
-            utils.empty_gpu_cache(self.args)
+            eval_utilities.empty_gpu_cache(self.args)
         self._batch_curr_action_spaces = self._batch_get_actions(self._batch_path)
         if self.args.use_gpu:
-            utils.empty_gpu_cache(self.args)
-        self._batch_curr_reward = self._batch_get_reward(self._batch_path)
+            eval_utilities.empty_gpu_cache(self.args)
         if self.args.use_gpu:
-            utils.empty_gpu_cache(self.args)
+            eval_utilities.empty_gpu_cache(self.args)
