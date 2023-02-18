@@ -3,11 +3,12 @@ path_list = os.getcwd().split('/')
 index = path_list.index('KGML-xDTD')
 script_path = '/'.join(path_list[:(index+1)] + ['scripts'])
 sys.path.append(script_path)
-from utils import ACDataLoader, empty_gpu_cache, load_index, pad_and_cat, entity_load_embed, relation_load_embed, ones_var_cuda, zeros_var_cuda, int_var_cuda, var_cuda, NodeSynonymizer
+from utils import ACDataLoader, empty_gpu_cache, set_random_seed, load_index, pad_and_cat, entity_load_embed, relation_load_embed, ones_var_cuda, zeros_var_cuda, int_var_cuda, var_cuda, NodeSynonymizer
 
 import pickle
 import joblib
 import torch
+from torch.utils.data import Dataset
 import logging
 import graph_tool.all as gt
 from knowledge_graph import KnowledgeGraph
@@ -21,14 +22,23 @@ SELF_LOOP_RELATION_ID = 1
 DUMMY_ENTITY_ID = 0
 TINY_VALUE = 1e-41
 
-def load_graphsage_unsupervised_embeddings(data_path: str):
-    file_path = os.path.join(data_path,'unsuprvised_graphsage_entity_embeddings.pkl')
+def load_graphsage_unsupervised_embeddings(data_path: str, use_node_attribute: bool = True):
+    if use_node_attribute:
+        file_path = os.path.join(data_path, 'entity_embeddings', 'unsuprvised_graphsage_entity_embeddings.pkl')
+    else:
+        file_path = os.path.join(data_path, 'entity_embeddings', 'unsuprvised_graphsage_entity_embeddings_wo_node_attributes.pkl')
     with open(file_path, 'rb') as infile:
         entity_embeddings_dict = pickle.load(infile)
     return entity_embeddings_dict
 
+def load_biobert_embeddings(data_path: str):
+    file_path = os.path.join(data_path, 'entity_embeddings', 'embedding_biobert_namecat.pkl')
+    with open(file_path,'rb') as infile:
+        biobert_embeddings_dict = pickle.load(infile)
+    return biobert_embeddings_dict
+
 def load_drp_module(model_path: str):
-    file_path = os.path.join(model_path,'KGML_xDTD','drp_module','model.pt')
+    file_path = os.path.join(model_path,'kgml_xdtd','drp_module','model.pt')
     fitModel = joblib.load(file_path)
     return fitModel
 
@@ -39,7 +49,7 @@ def load_moa_module(args, model_path: str):
 
     env = KGEnvironment(args, kg, max_path_len=args.max_path, state_pre_history=args.state_history)
     fitModel = DiscriminatorActorCritic(args, kg, args.state_history, args.gamma, args.target_update, args.ac_hidden, args.disc_hidden, args.metadisc_hidden)
-    args.policy_net_file = os.path.join(model_path,'KGML_xDTD','moa_module','model.pt')
+    args.policy_net_file = os.path.join(model_path,'kgml_xdtd','moa_module','model.pt')
     policy_net = torch.load(args.policy_net_file, map_location=args.device)
     model_temp = fitModel.policy_net.state_dict()
     model_temp.update(policy_net)
@@ -201,3 +211,15 @@ def name_to_id(name: str):
             return preferred_result['preferred_curie']
         else:
             return str(None)
+
+
+class DataWrapper(Dataset):
+    def __init__(self, paths):
+        self.paths = paths
+
+    def __len__(self):
+        return len(self.paths)
+
+    def __getitem__(self, idx):
+        n_id, adjs = pickle.load(open(self.paths[idx],'rb'))
+        return (n_id, adjs)

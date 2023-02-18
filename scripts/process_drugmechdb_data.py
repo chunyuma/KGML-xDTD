@@ -163,6 +163,7 @@ if __name__ == '__main__':
     ## folder parameters
     parser.add_argument("--log_dir", type=str, help="The path of logfile folder", default="../log_folder")
     parser.add_argument("--log_name", type=str, help="log file name", default="step13_2.log")
+    parser.add_argument('--data_dir', type=str, help='Full path of data folder', default='../data')
     parser.add_argument('--drugmechDB_yaml', type=str, help="The full path of 'indication_path.yaml' from DrugMeshDB Github repo")
     parser.add_argument("--output_folder", type=str, help="The path of output folder", default="~/drugmeshdb")
     args = parser.parse_args()
@@ -193,7 +194,7 @@ if __name__ == '__main__':
 
     ########################################
     args.logger.info("Step2: mapping the intermediate nodes to biological entities used in RTX-KG2c")
-    kg = knowledge_graph(data_dir, bandwidth=3000)
+    kg = knowledge_graph(args.data_dir, bandwidth=3000)
     G = gt.Graph()
     kg_tmp = dict()
     for source in kg.graph:
