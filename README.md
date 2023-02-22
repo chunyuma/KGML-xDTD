@@ -49,6 +49,7 @@ cd ..
 ## decompress tar.gz file
 tar zxvf bkg_rtxkg2c_v2.7.3.tar.gz
 rm bkg_rtxkg2c_v2.7.3.tar.gz
+ln -s ../bkg_rtxkg2c_v2.7.3/relevant_dbs/node_synonymizer_v1.0_KG2.7.3.sqlite ./scripts/node_synonymizer_v1.0_KG2.7.3.sqlite
 
 ## set up neo4j info 
 export neo4j_username='neo4j'
