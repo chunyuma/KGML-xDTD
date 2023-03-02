@@ -358,7 +358,10 @@ class KGML_xDTD:
                 temp = pd.DataFrame(edge_mat.numpy())
                 if len(temp) != 0:
                     keep_index = list(temp.loc[~(temp[1].isin(filter_edges) | temp[2].isin(filter_edges) | temp[3].isin(filter_edges)),:].index)
-                    self._filtered_res_all_paths[(source,target)] = [edge_mat[keep_index],node_mat[keep_index]]
+                    if len(keep_index) == 0:
+                        self._filtered_res_all_paths[(source,target)] = []
+                    else:
+                        self._filtered_res_all_paths[(source,target)] = [edge_mat[keep_index],node_mat[keep_index]]
                 else:
                     self._filtered_res_all_paths[(source,target)] = []
         return 1
