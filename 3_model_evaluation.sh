@@ -96,3 +96,4 @@ python ${work_folder}/scripts/calculate_path_prob.py --log_dir ${work_folder}/lo
 # python ${work_folder}/scripts/calculate_evaluation_metrics.py --log_dir ${work_folder}/log_folder --log_name step15_3.log --data_dir ${work_folder}/data --drugmeshdb_match ${work_folder}/drugmeshdb/match_paths.pkl --all_paths_prob ${work_folder}/drugmeshdb/res_all_paths_prob_ablation.pkl
 
 # Note that some baseline models are impletmented independently, please go to ${work_folder}/baselines folder to find the specific baseline models that we compare in our paper. Under each baseline model folder, there is a "main.sh" file. Please follow the steps within "main.sh" file to implement such baseline model.
+
