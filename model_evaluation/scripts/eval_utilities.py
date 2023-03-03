@@ -198,13 +198,24 @@ def id_to_name(curie: str):
     else:
         preferred_result = get_preferred_curie(curie=curie)
         if preferred_result:
-            return preferred_result['preferred_name']
+            if preferred_result['preferred_name'] == '' or preferred_result['preferred_name'] is None:
+                all_results = nodesynonymizer.get_normalizer_results(curie)[curie]
+                if all_results:
+                    all_synonyms = all_results['synonyms']
+                    if all_synonyms:
+                        return sorted(all_synonyms.items(), key=lambda x: x[1], reverse=True)[0][0]
+                    else:
+                        return str(curie)
+                else:
+                    return str(curie)
+            else:
+                return preferred_result['preferred_name']
         else:
-            return str(None)
+            return str(curie)
 
 def name_to_id(name: str):
     if name is None:
-        return None
+        return str(None)
     else:
         preferred_result = get_preferred_curie(name=name)
         if preferred_result:

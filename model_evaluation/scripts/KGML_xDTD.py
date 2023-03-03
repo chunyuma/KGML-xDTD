@@ -325,9 +325,9 @@ class KGML_xDTD:
             self.args.logger.warning("The 'df_table' is empty.")
             return 0
         elif len(df_talbe_list) == 1:
-            self.args.logger.info(f"Extracting all paths with the length of up to 3 for the drug-disease pair {[(drug,disease) for drug, disease in df_talbe_list]}.")
+            self.args.logger.info(f"Extracting all paths with the length up to 3 for the drug-disease pair {[(drug,disease) for drug, disease in df_talbe_list]}.")
         else:
-            self.args.logger.info(f"Extracting all paths with the length of up to 3 for {len(df_table)} drug-disease pairs {df_table}.")
+            self.args.logger.info(f"Extracting all paths with the length up to 3 for {len(df_table)} drug-disease pairs {df_table}.")
         filter_edges = [self.args.relation2id[edge] for edge in ['biolink:related_to','biolink:biolink:part_of','biolink:coexists_with','biolink:contraindicated_for'] if self.args.relation2id.get(edge)]
         
         for row in df_talbe_list:
