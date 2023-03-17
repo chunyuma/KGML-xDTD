@@ -82,8 +82,7 @@ python ${work_folder}/scripts/download_data_from_neo4j.py --log_dir ${work_folde
 ## step2: generate tp and tn
 echo 'running step2: generate tp and tn edges'
 python ${work_folder}/scripts/generate_tp_tn_pairs.py --log_dir ${work_folder}/log_folder \
-                                                      --log_name step2.log \ 
-                                                      --use_input_training_edges \
+                                                      --log_name step2.log \
                                                       --graph ${work_folder}/data/graph_edges.txt \
                                                       --tncutoff "10" \
                                                       --tpcutoff "10" \
