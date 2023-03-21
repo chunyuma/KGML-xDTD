@@ -25,10 +25,15 @@ def run_random_walks(this):
     if G.degree(node) == 0:
         pairs = pairs
     else:
-        for i in range(num_walks):
+        for _ in range(num_walks):
             curr_node = node
-            for j in range(walk_len):
-                next_node = random.choice([n for n in G.neighbors(curr_node)])
+            for _ in range(walk_len):
+                neighbors = [n for n in G.neighbors(curr_node)]
+                if len(neighbors) == 0:
+                    ## no neighbor, stop BFS searching
+                    break
+                else:
+                    next_node = random.choice()
                 # self co-occurrences are useless
                 if curr_node != node:
                     pairs.append((node, curr_node))
