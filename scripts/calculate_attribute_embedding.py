@@ -22,7 +22,7 @@ def load_data(args):
     id2index = {}
     texts = []
 
-    with open(args.data_dir, "r") as f:
+    with open(args.node_info, "r") as f:
         line = f.readline()
         line = f.readline()
         index = 0
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     parser.add_argument("--log_name", type=str, help="log file name", default="step5.log")
     parser.add_argument('--gpu', type=int, help='gpu device (default: 0)', default=0)
     parser.add_argument("--use_gpu", action="store_true", help="Whether use GPU or not", default=False)
-    parser.add_argument('--data_dir', type=str, help='Full path of data folder', default='../data')
+    parser.add_argument('--node_info', type=str, help='Path to a file containing node information', default='../data/all_graph_nodes_info.txt')
     parser.add_argument('--seed', type=int, help='Random seed (default: 1023)', default=1023)
     parser.add_argument("--batch_size", type=int, help="Batch size of bert embedding calculation", default=0)
     parser.add_argument("--output_folder", type=str, help="The path of output folder", default="../data")
@@ -70,7 +70,7 @@ if __name__ == "__main__":
 
     utils.set_random_seed(args.seed)
 
-    print(f"Start Loading data from {args.data_dir}")
+    print(f"Start Loading data from {args.node_info}")
     id2index, texts = load_data(args)
     index2id = {value:key for key, value in id2index.items()}
 
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     start_time = time.time()
 
     for i in range(len(texts) // args.batch_size):
-        if (i * batch_size) % 10000 == 0:
+        if (i * args.batch_size) % 10000 == 0:
             print(f"Finished: {i * args.batch_size} in {time.time() - start_time}")
             start_time = time.time()
         batch_text = texts[i*args.batch_size:(i+1)*args.batch_size]
