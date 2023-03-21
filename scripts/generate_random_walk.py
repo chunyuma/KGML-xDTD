@@ -33,7 +33,7 @@ def run_random_walks(this):
                     ## no neighbor, stop BFS searching
                     break
                 else:
-                    next_node = random.choice()
+                    next_node = random.choice(neighbors)
                 # self co-occurrences are useless
                 if curr_node != node:
                     pairs.append((node, curr_node))
