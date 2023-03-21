@@ -127,3 +127,4 @@ python ${work_folder}/scripts/split_data_train_val_test.py --log_dir ${work_fold
                                                            --n_random_test 500 \
                                                            --n_random 30 --train_val_test_size "[0.8, 0.1, 0.1]" 
 
+
