@@ -19,6 +19,7 @@ dependencies:
   - xmltodict
   - nltk
   - pattern
+  - httpx
   - pip:
     - beautifulsoup4
     - biopython
