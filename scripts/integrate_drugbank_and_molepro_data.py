@@ -5,63 +5,112 @@ import pickle
 import argparse
 import utils
 import requests
+import asyncio
+import httpx
+from typing import Optional, List
+import traceback
 from tqdm import tqdm
 
-def generate_query_graph(curie_id, category):
-    if type(curie_id) is str:
-        query_id = [curie_id]
-    else:
-        query_id = curie_id
+class MoleProData:
 
-    query_graph = {
-        "message": {
-            "query_graph": {
-            "edges": {
-                "e00": {
-                "subject": "n00",
-                "predicates": [
-                    "biolink:affects",
-                    "biolink:interacts_with"
-                ],
-                "object": "n01"
-                }
-            },
-            "nodes": {
-                "n00": {
-                "ids": query_id,
-                "categories": [
-                    category
-                ]
+    def __init__(self, logger, molepro_api_link: str = 'https://molepro-trapi.transltr.io/molepro/trapi/v1.3'):
+        """
+        Initial Method
+        """
+        ## setup basic information
+        self.molepro_api_link = molepro_api_link
+        self.logger = logger
+        self.client = httpx.Client()
+
+    async def _call_async_melepro(self, client: httpx.AsyncClient, curie_id: str, category: str):
+            try:
+                request_body = self._generate_query_graph(curie_id, category)
+                resp = await client.post(f'{self.molepro_api_link}/query', json = request_body, headers={'accept': 'application/json'})
+            except Exception:
+                traceback.print_exc()
+                print(f"############### {curie_id}", flush=True)
+                exit()
+
+            if not resp.status_code == 200:
+                self.logger.warning(f"{curie_id} fails to call molepro api with status code {resp.status_code}")
+                return    
+
+            resp_res = resp.json()
+            temp_pairs = self._extract_drug_target_pairs_from_kg(resp_res['message']['knowledge_graph'])
+    
+            return temp_pairs
+
+    async def _download_genome_data(self, param_list: List):
+        async with httpx.AsyncClient(timeout=None) as client:
+            tasks = [asyncio.create_task(self._call_async_melepro(client, curie_id, category)) for curie_id, category in param_list]
+            self.logger.info("starting to extract data from molepro api")
+            temp_results = await asyncio.gather(*tasks)
+            self.results = pd.concat(temp_results).reset_index(drop=True)
+            self.logger.info("Extracted data from molepro api done")
+
+    @staticmethod
+    def _generate_query_graph(curie_id, category):
+        if type(curie_id) is str:
+            query_id = [curie_id]
+        else:
+            query_id = curie_id
+
+        query_graph = {
+            "message": {
+                "query_graph": {
+                "edges": {
+                    "e00": {
+                    "subject": "n00",
+                    "predicates": [
+                        "biolink:affects",
+                        "biolink:interacts_with"
+                    ],
+                    "object": "n01"
+                    }
                 },
-                "n01": {
-                "categories": [
-                    "biolink:Gene",
-                    "biolink:Protein"
-                ]
+                "nodes": {
+                    "n00": {
+                    "ids": query_id,
+                    "categories": [
+                        category
+                    ]
+                    },
+                    "n01": {
+                    "categories": [
+                        "biolink:Gene",
+                        "biolink:Protein"
+                    ]
+                    }
                 }
-            }
+                }
             }
         }
-    }
 
-    return query_graph
+        return query_graph
+
+    @staticmethod
+    def _extract_drug_target_pairs_from_kg(kg, pmid_support=True):
+
+        if pmid_support:
+            res = [(kg['edges'][key]['subject'], kg['edges'][key]['object'], attr['value']) for key in kg['edges'] for attr in kg['edges'][key]['attributes'] if attr['original_attribute_name']=='publication']
+            return pd.DataFrame(res, columns=['subject','object','pmid'])
+        else:
+            res = [(kg['edges'][key]['subject'], kg['edges'][key]['object']) for key in kg['edges']]
+            return pd.DataFrame(res, columns=['subject','object'])
 
 
-def extract_drug_target_pairs_from_kg(kg, pmid_support=True):
+    def get_molepro_data(self, res):
 
-    if pmid_support:
-        res = [(kg['edges'][key]['subject'], kg['edges'][key]['object'], attr['value']) for key in kg['edges'] for attr in kg['edges'][key]['attributes'] if attr['original_attribute_name']=='publication']
-        return pd.DataFrame(res, columns=['subject','object','pmid'])
-    else:
-        res = [(kg['edges'][key]['subject'], kg['edges'][key]['object']) for key in kg['edges']]
-        return pd.DataFrame(res, columns=['subject','object'])
+        param_list = [(row[0], row[1]) for row in res.to_numpy()]
+        ## start the asyncio program
+        asyncio.run(self._download_genome_data(param_list))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--log_dir", type=str, help="The path of logfile folder", default="../log_folder")
     parser.add_argument("--log_name", type=str, help="log file name", default="step3_3.log")
     parser.add_argument('--data_dir', type=str, help='Full path of data folder', default='../data')
-    parser.add_argument('--molepro_api_link', type=str, help='API link of Molecular Data Provider', default='https://translator.broadinstitute.org/molepro/trapi/v1.2')
+    parser.add_argument('--molepro_api_link', type=str, help='API link of Molecular Data Provider', default='https://molepro-trapi.transltr.io/molepro/trapi/v1.3')
     parser.add_argument('--outdir_name', type=str, help='The name of output directory for storing results', default='expert_path_files')
     args = parser.parse_args()
 
@@ -92,30 +141,18 @@ if __name__ == '__main__':
     p_expert_paths.columns = ['drugbankid', 'subject', 'object']
 
     ## query molepro (Molecular Data Provider) API
-    if not os.path.exists(os.path.join(args.data_dir, args.outdir_name, 'molepro_df_backup.txt')):
-        api_res = requests.get(f'{args.molepro_api_link}/meta_knowledge_graph')
-        if api_res.status_code == 200:
-            molepro_meta_kg = api_res.json()
+    if not os.path.exists(os.path.join(args.output_folder, 'expert_path_files', 'molepro_df_backup.txt')):
+        # api_res = requests.get(f'{args.molepro_api_link}/meta_knowledge_graph')
+        # if api_res.status_code == 200:
+        #     molepro_meta_kg = api_res.json()
 
-        molepro_df = pd.DataFrame(columns=['subject','object','pmid'])
-        for index in tqdm(range(len(res))):
-            curie_id = res.loc[index,'id']
-            category = res.loc[index,'category']
-            request_body = generate_query_graph(curie_id, category)
-            r = requests.post(f'{args.molepro_api_link}/query', json = request_body, headers={'accept': 'application/json'})
-            if r.status_code == 200:
-                r_res = r.json()
-                temp_pairs = extract_drug_target_pairs_from_kg(r_res['message']['knowledge_graph'])
-                molepro_df = pd.concat([molepro_df,temp_pairs]).reset_index(drop=True)
-            else:
-                logger.warning(f"{curie_id} fails to call molepro api")
-
-            if index!=0 and index%1000==0:
-                molepro_df.to_csv(os.path.join(args.data_dir, args.outdir_name, 'molepro_df_backup.txt'), sep='\t', index=None)
-        molepro_df.to_csv(os.path.join(args.data_dir, args.outdir_name, 'molepro_df_backup.txt'), sep='\t', index=None)
+        moleprodata_obj = MoleProData(logger, args.molepro_api_link)
+        moleprodata_obj.get_molepro_data(res)
+        molepro_df = moleprodata_obj.results
+        molepro_df.to_csv(os.path.join(args.output_folder, 'expert_path_files', 'molepro_df_backup.txt'), sep='\t', index=None)
     else:
-        molepro_df = pd.read_csv(os.path.join(args.data_dir, args.outdir_name, 'molepro_df_backup.txt'), sep='\t', header=0)
-
+        molepro_df = pd.read_csv(os.path.join(args.output_folder, 'expert_path_files', 'molepro_df_backup.txt'), sep='\t', header=0)
+    
     temp_dict = dict()
     for index in range(len(molepro_df)):
         source, target, pmid = molepro_df.loc[index,'subject'], molepro_df.loc[index,'object'], molepro_df.loc[index,'pmid']
