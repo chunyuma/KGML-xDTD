@@ -108,11 +108,11 @@ if __name__ == "__main__":
 
     # generate Graph json file
 
-    data = {'directed': True,
+    data = {'directed': False,
             'graph': {'name': 'disjoint_union(,)'},
             'nodes': [],
             'links': [],
-            "multigraph": True
+            "multigraph": False
             }
 
     if args.process==-1:
