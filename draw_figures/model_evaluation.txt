@@ -1,5 +1,5 @@
 method	model	metric	value
-drug_rank	TransE	MRR	0.04300845
+drug_rank	TransE	MRR	0.04300846
 drug_rank	TransE	Hit@1	0.01818182
 drug_rank	TransE	Hit@3	0.03776224
 drug_rank	TransE	Hit@5	0.05314685
@@ -107,7 +107,7 @@ combined_rank	GraphSAGE+logistic	MRR	0.00000352
 combined_rank	GraphSAGE+logistic	Hit@1	0.0
 combined_rank	GraphSAGE+logistic	Hit@3	0.0
 combined_rank	GraphSAGE+logistic	Hit@5	0.0
-drug_rank	KGML-DTPD w/o NAEs	MRR	0.02030991
+drug_rank	KGML-DTPD w/o NAEs	MRR	0.02030959
 drug_rank	KGML-DTPD w/o NAEs	Hit@1	0.01258741
 drug_rank	KGML-DTPD w/o NAEs	Hit@3	0.01958042
 drug_rank	KGML-DTPD w/o NAEs	Hit@5	0.02424242
@@ -116,18 +116,18 @@ disease_rank	KGML-DTPD w/o NAEs	Hit@1	0.00745921
 disease_rank	KGML-DTPD w/o NAEs	Hit@3	0.01678322
 disease_rank	KGML-DTPD w/o NAEs	Hit@5	0.02750583
 combined_rank	KGML-DTPD w/o NAEs	MRR	0.00169636
-combined_rank	KGML-DTPD w/o NAEs	Hit@1	0.0009324
-combined_rank	KGML-DTPD w/o NAEs	Hit@3	0.0009324
-combined_rank	KGML-DTPD w/o NAEs	Hit@5	0.0009324
-drug_rank	2-class KGML-DTPD	MRR	0.10101362
+combined_rank	KGML-DTPD w/o NAEs	Hit@1	0.00093240
+combined_rank	KGML-DTPD w/o NAEs	Hit@3	0.00093240
+combined_rank	KGML-DTPD w/o NAEs	Hit@5	0.00093240
+drug_rank	2-class KGML-DTPD	MRR	0.10101432
 drug_rank	2-class KGML-DTPD	Hit@1	0.06620047
 drug_rank	2-class KGML-DTPD	Hit@3	0.10815851
 drug_rank	2-class KGML-DTPD	Hit@5	0.12913753
-disease_rank	2-class KGML-DTPD	MRR	0.05312572
+disease_rank	2-class KGML-DTPD	MRR	0.05312590
 disease_rank	2-class KGML-DTPD	Hit@1	0.02843823
 disease_rank	2-class KGML-DTPD	Hit@3	0.05268065
 disease_rank	2-class KGML-DTPD	Hit@5	0.06713287
-combined_rank	2-class KGML-DTPD	MRR	0.01319878
+combined_rank	2-class KGML-DTPD	MRR	0.01319884
 combined_rank	2-class KGML-DTPD	Hit@1	0.00512821
 combined_rank	2-class KGML-DTPD	Hit@3	0.00979021
 combined_rank	2-class KGML-DTPD	Hit@5	0.01351981
@@ -138,7 +138,7 @@ drug_rank	KGML-DTPD	Hit@5	0.17109557
 disease_rank	KGML-DTPD	MRR	0.07831913
 disease_rank	KGML-DTPD	Hit@1	0.04428904
 disease_rank	KGML-DTPD	Hit@3	0.07878788
-disease_rank	KGML-DTPD	Hit@5	0.1048951
+disease_rank	KGML-DTPD	Hit@5	0.10489510
 combined_rank	KGML-DTPD	MRR	0.02158758
 combined_rank	KGML-DTPD	Hit@1	0.00932401
 combined_rank	KGML-DTPD	Hit@3	0.01771562
