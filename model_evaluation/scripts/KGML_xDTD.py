@@ -267,6 +267,44 @@ class KGML_xDTD:
         
         return top_N_diseases
 
+    def predict_diseases_by_threshold(self, drug_curie: str = None, drug_name: str = None,  threshold: float = 0.8):
+        """
+        Predict diseases that could be treated by a given drug with a given threshold
+        :param drug_curie: curie id of a drug [optional]. Note one of `drug_curie` or `drug_name` is required.
+        :param drug_name: name of a drug [optional]. Note one of `drug_curie` or `drug_name` is required.
+        :param threshold: threshold for treatment probability for a given drug [optional]. Default is 0.8
+        :return: a dataframe with the top potential diseases (curie ids, names) with their treatment probabiliteis
+        :rtype: dataframe
+        """
+
+        ## get preferred_curie for a given drug curie or name
+        if drug_curie:
+            orig_drug = drug_curie
+            preferred_drug_curie = self._get_preferred_curie(curie=drug_curie, curie_type= 'drug')
+        elif drug_name:
+            orig_drug = drug_name
+            preferred_drug_curie = self._get_preferred_curie(name=drug_name, curie_type= 'drug')
+        else:
+            self.args.logger.error(f"No 'drug_curie' or 'drug_name' provided. Please provide either of them.")
+            return None
+        if not preferred_drug_curie:
+            return None
+        
+        if preferred_drug_curie in self._topN_prob_drug_cache:
+            res = self._topN_prob_drug_cache[preferred_drug_curie]
+            top_diseases = res.loc[res['tp_score'] >= threshold,:]
+        else:
+            self.args.logger.info(f"Predicting diseases for drug {orig_drug} based on the threshold {threshold}")
+            X = np.vstack([np.hstack([self.entity_embeddings_dict[preferred_drug_curie],self.entity_embeddings_dict[disease_curie_id]]) for disease_curie_id in self.disease_curie_ids])
+            res_temp = self.drp_module.predict_proba(X)
+            res = pd.concat([pd.DataFrame(self.disease_curie_ids),pd.DataFrame(self.disease_curie_names),pd.DataFrame(res_temp)], axis=1)
+            res.columns = ['disease_id','disease_name','tn_score','tp_score','unknown_score']
+            res = res.sort_values(by=['tp_score'],ascending=False).reset_index(drop=True)
+            self._topN_prob_drug_cache[preferred_drug_curie] = res
+            top_diseases = res.loc[res['tp_score'] >= threshold,:]
+            
+        return top_diseases
+
     def predict_top_N_drugs(self, disease_curie: str = None, disease_name: str = None, N: int = 10):
         """
         Predict top N potential drugs that could be used to treat a given disease
@@ -304,6 +342,44 @@ class KGML_xDTD:
             top_N_drugs = res.iloc[:N,:]
         
         return top_N_drugs
+
+    def predict_drugs_by_threshold(self, disease_curie: str = None, disease_name: str = None, threshold: float = 0.8):
+        """
+        Predict drugs that could be used to treat a given disease with a given threshold
+        :param disease_curie: curie id of a disease [optional]. Note one of `disease_curie` or `disease_name` is required.
+        :param disease_name: name of a disease [optional]. Note one of `disease_curie` or `disease_name` is required.
+        :threshold: threshold for treatment probability for a given disease [optional]. Default is 0.8
+        :return: a dataframe with the top potential drugs (curie ids, names) with their treatment probabiliteis
+        :rtype: dataframe
+        """
+
+        ## get preferred_curie for a given disease curie or name
+        if disease_curie:
+            orig_disease = disease_curie
+            preferred_disease_curie = self._get_preferred_curie(curie=disease_curie, curie_type= 'disease')
+        elif disease_name:
+            orig_disease = disease_name
+            preferred_disease_curie = self._get_preferred_curie(name=disease_name, curie_type= 'disease')
+        else:
+            self.args.logger.error(f"No 'disease_curie' or 'disease_name' provided. Please provide either of them.")
+            return None
+        if not preferred_disease_curie:
+            return None
+
+        if preferred_disease_curie in self._topN_prob_disease_cache:
+            res = self._topN_prob_disease_cache[preferred_disease_curie]
+            top_drugs = res.loc[res['tp_score'] >= threshold,:]
+        else:
+            self.args.logger.info(f"Predicting drugs for disease {orig_disease} based on the threshold {threshold}")
+            X = np.vstack([np.hstack([self.entity_embeddings_dict[drug_curie_id],self.entity_embeddings_dict[preferred_disease_curie]]) for drug_curie_id in self.drug_curie_ids])
+            res_temp = self.drp_module.predict_proba(X)
+            res = pd.concat([pd.DataFrame(self.drug_curie_ids),pd.DataFrame(self.drug_curie_names),pd.DataFrame(res_temp)], axis=1)
+            res.columns = ['drug_id','drug_name','tn_score','tp_score','unknown_score']
+            res = res.sort_values(by=['tp_score'],ascending=False).reset_index(drop=True)
+            self._topN_prob_disease_cache[preferred_disease_curie] = res
+            top_drugs = res.loc[res['tp_score'] >= threshold,:]
+
+        return top_drugs   
 
     def _extract_all_paths(self, df_table: pd.core.frame.DataFrame = None):
         """

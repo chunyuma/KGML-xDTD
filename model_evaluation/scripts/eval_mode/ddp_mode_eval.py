@@ -41,7 +41,11 @@ class DDP_Mode:
 
         if use_random:
             self.test_data = pd.read_csv(os.path.join(self.data_path, 'test_pairs.txt'), sep='\t', header=0)
-            self.random_data = pd.read_csv(os.path.join(self.data_path, 'random_pairs.txt'), sep='\t', header=0)
+            # self.random_data = pd.read_csv(os.path.join(self.data_path, 'random_pairs.txt'), sep='\t', header=0)
+            self.random_data_list = []
+            ten_times_random_data_dir = os.path.join(self.data_path, '10times_random_pairs')
+            for random_data_file in sorted(os.listdir(ten_times_random_data_dir), key=lambda x: int(x.replace('.txt','').split('_')[-1])):
+                self.random_data_list += [pd.read_csv(os.path.join(ten_times_random_data_dir, random_data_file), sep='\t', header=0)]
         else:
             self.train_data = pd.read_csv(os.path.join(self.data_path, 'train_pairs.txt'), sep='\t', header=0)
             self.val_data = pd.read_csv(os.path.join(self.data_path, 'val_pairs.txt'), sep='\t', header=0)
@@ -172,7 +176,7 @@ class DDP_Mode:
         self.test_data = self._transfer_name_to_id(self.test_data)
         
         if use_random:
-            self.random_data = self._transfer_name_to_id(self.random_data)
+            self.random_data_list = [self._transfer_name_to_id(random_data) for random_data in self.random_data_list]
             
 
     def _transfer_name_to_id(self, data: pd.core.frame.DataFrame):
@@ -408,9 +412,6 @@ class DDP_Mode:
             test_scores = scores[:,0]
             test_labels = test_data["y"].to_numpy()
 
-            random_data = self.random_data
-            random_scores = self._kgembedding_models_tp_probability(random_data["source_id"], random_data["target_id"], kg_model)
-
             acc = self.calculate_accuracy(test_preds, test_labels)
             macro_f1score = self.calculate_f1_score(test_preds, test_labels)
 
@@ -419,13 +420,26 @@ class DDP_Mode:
 
             test_data['prob'] = -test_scores
             true_pairs = test_data.loc[test_data['y']==1,:].reset_index(drop=True)
-            random_data['prob'] = -random_scores
-            random_pairs = random_data
 
-            ranks = self.calculate_rank(true_pairs, random_pairs)
-            result['mrr'] = f"{np.array([1/rank for rank in ranks]).mean():.3f}"
+            mrr_res = []
+            hit1_res = []
+            hit3_res = []
+            hit5_res = []
+
+            for random_data in tqdm(self.random_data_list, desc="using 10 Random Data"):
+                random_scores = self._kgembedding_models_tp_probability(random_data["source_id"], random_data["target_id"], kg_model)
+                random_data['prob'] = -random_scores
+                random_pairs = random_data
+                ranks = self.calculate_rank(true_pairs, random_pairs)
+                mrr_res.append(np.array([1/rank for rank in ranks]).mean())
+                hit1_res.append(np.array([x <= 1 for x in ranks]).mean())
+                hit3_res.append(np.array([x <= 3 for x in ranks]).mean())
+                hit5_res.append(np.array([x <= 5 for x in ranks]).mean())
+
+            result['mrr'] = f"{np.array(mrr_res).mean():.3f} (+/- {np.array(mrr_res).std():.3f})"
             for k in [1,3,5]:
-                result[f'hit@{k}'] = f"{np.array([x <= k for x in ranks]).mean():.3f}"
+                res = eval(f"hit{k}_res")
+                result[f'hit@{k}'] = f"{np.array(res).mean():.3f} (+/- {np.array(res).std():.3f})"
         
         else:
             self.logger.info("Using three replacement methods for MRR and Hit@K calculation")
@@ -451,7 +465,7 @@ class DDP_Mode:
 
     def eval_graphsage_link(self, use_random: bool=True):
         
-        def _generate_probas_and_label(model, loader, batch_data, device):
+        def _generate_probas_and_label(model, loader, batch_data, init_emb, device):
             probas = []
             label = []
 
@@ -486,9 +500,8 @@ class DDP_Mode:
         ## load processed data
         dataset = Dataset(self.data_path, self.logger, entity_embeddings)
         data = dataset.get_dataset()
-        _, _, test_batch, random_batch = dataset.get_train_val_test_random()
+        _, _, test_batch, random_batch_list = dataset.get_train_val_test_random()
         test_loader = dataset.get_test_loader()
-        random_loader = dataset.get_random_loader()
         init_emb = data.feat
         test_data = pd.concat(test_batch)
 
@@ -496,12 +509,8 @@ class DDP_Mode:
             self.logger.info("Using 1,000 random drug-disease pairs for MRR and Hit@K calculation")
             
             ## calculate probability for test data
-            test_probas, test_labels = _generate_probas_and_label(model, test_loader, test_batch, self.device)
+            test_probas, test_labels = _generate_probas_and_label(model, test_loader, test_batch, init_emb, self.device)
             test_preds = np.argmax(test_probas, axis=1)
-
-            random_data = pd.concat(random_batch)
-            ## calculate probability
-            random_probas, _ = _generate_probas_and_label(model, random_loader, random_batch, self.device)
 
             acc = self.calculate_accuracy(test_preds, test_labels)
             macro_f1score = self.calculate_f1_score(test_preds, test_labels)
@@ -512,13 +521,29 @@ class DDP_Mode:
             ## calculate MRR and Hit@k
             test_data['prob'] = test_probas[:,1]
             true_pairs = test_data.loc[test_data['y']==1,:].reset_index(drop=True)
-            random_data['prob'] = random_probas[:,1]
-            random_pairs = random_data
 
-            ranks = self.calculate_rank(true_pairs, random_pairs)
-            result['mrr'] = f"{np.array([1/rank for rank in ranks]).mean():.3f}"
+            mrr_res = []
+            hit1_res = []
+            hit3_res = []
+            hit5_res = []
+
+            for index, random_batch in enumerate(tqdm(random_batch_list, desc="using 10 Random Data")):
+                random_loader = dataset.get_random_loader(index)
+                random_data = pd.concat(random_batch)
+                random_probas, _ = _generate_probas_and_label(model, random_loader, random_batch, init_emb, self.device)
+                random_data['prob'] = random_probas[:,1]
+                random_pairs = random_data
+
+                ranks = self.calculate_rank(true_pairs, random_pairs)
+                mrr_res.append(np.array([1/rank for rank in ranks]).mean())
+                hit1_res.append(np.array([x <= 1 for x in ranks]).mean())
+                hit3_res.append(np.array([x <= 3 for x in ranks]).mean())
+                hit5_res.append(np.array([x <= 5 for x in ranks]).mean())
+
+            result['mrr'] = f"{np.array(mrr_res).mean():.3f} (+/- {np.array(mrr_res).std():.3f})"
             for k in [1,3,5]:
-                result[f'hit@{k}'] = f"{np.array([x <= k for x in ranks]).mean():.3f}"
+                res = eval(f"hit{k}_res")
+                result[f'hit@{k}'] = f"{np.array(res).mean():.3f} (+/- {np.array(res).std():.3f})"
 
         else:
             self.logger.info("Using three replacement methods for MRR and Hit@K calculation")
@@ -576,12 +601,6 @@ class DDP_Mode:
             test_probas = model.predict_proba(test_X)
             test_preds = np.argmax(test_probas, axis=1)
 
-            random_data = self.random_data
-            random_X, _ = self._generate_X_and_y(entity_embeddings, random_data)
-
-            ## calculate probability
-            random_probas = model.predict_proba(random_X)
-
             acc = self.calculate_accuracy(test_preds, test_labels)
             macro_f1score = self.calculate_f1_score(test_preds, test_labels)
 
@@ -602,13 +621,28 @@ class DDP_Mode:
             ## calculate MRR and Hit@k
             test_data['prob'] = test_probas[:,1]
             true_pairs = test_data.loc[test_data['y']==1,:].reset_index(drop=True)
-            random_data['prob'] = random_probas[:,1]
-            random_pairs = random_data
 
-            ranks = self.calculate_rank(true_pairs, random_pairs)
-            result['mrr'] = f"{np.array([1/rank for rank in ranks]).mean():.3f}"
+            mrr_res = []
+            hit1_res = []
+            hit3_res = []
+            hit5_res = []
+
+            for random_data in tqdm(self.random_data_list, desc="using 10 Random Data"):
+                random_X, _ = self._generate_X_and_y(entity_embeddings, random_data)
+                ## calculate probability
+                random_probas = model.predict_proba(random_X)
+                random_data['prob'] = random_probas[:,1]
+                random_pairs = random_data
+                ranks = self.calculate_rank(true_pairs, random_pairs)
+                mrr_res.append(np.array([1/rank for rank in ranks]).mean())
+                hit1_res.append(np.array([x <= 1 for x in ranks]).mean())
+                hit3_res.append(np.array([x <= 3 for x in ranks]).mean())
+                hit5_res.append(np.array([x <= 5 for x in ranks]).mean())
+
+            result['mrr'] = f"{np.array(mrr_res).mean():.3f} (+/- {np.array(mrr_res).std():.3f})"
             for k in [1,3,5]:
-                result[f'hit@{k}'] = f"{np.array([x <= k for x in ranks]).mean():.3f}"
+                res = eval(f"hit{k}_res")
+                result[f'hit@{k}'] = f"{np.array(res).mean():.3f} (+/- {np.array(res).std():.3f})"
 
         else:
 
