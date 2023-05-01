@@ -10,6 +10,7 @@ import argparse
 import utils
 import pickle
 import copy
+from tqdm import tqdm, trange
 
 def generate_rand_data(n, pairs, disease_list, drug_list, all_known_tp_pairs, existing_pairs=None):
 
@@ -257,7 +258,17 @@ if __name__ == '__main__':
 
     args.pretrain_outdir_2class = os.path.join(args.data_dir,'pretrain_reward_shaping_model_train_val_test_random_data_2class')
     if not os.path.isdir(args.pretrain_outdir_2class):
-        os.mkdir(args.pretrain_outdir_2class)
+        os.makedirs(args.pretrain_outdir_2class)
+
+    args.ten_times_random_pairs = os.path.join(args.pretrain_outdir_2class, '10times_random_pairs')
+    if not os.path.isdir(args.ten_times_random_pairs):
+        os.makedirs(args.ten_times_random_pairs)
+
+    ## generate 10 times random pairs for test set
+    for i in trange(10):
+        existing_pairs = pd.concat([pretrain_data_train_pairs,pretrain_data_val_pairs,pretrain_data_test_pairs]).reset_index(drop=True)
+        random_pairs = generate_rand_data(args.n_random_test_mrr_hk, pretrain_data_test_pairs, disease_names, drug_names, all_known_tp_pairs, existing_pairs)
+        random_pairs.to_csv(os.path.join(args.ten_times_random_pairs, 'random_pairs_{}.txt'.format(i)), sep='\t', index=None)
 
     pretrain_data_train_pairs.loc[pretrain_data_train_pairs['y']!=2,:].reset_index(drop=True).to_csv(os.path.join(args.pretrain_outdir_2class, 'train_pairs.txt'), sep='\t', index=None)
     pretrain_data_val_pairs.loc[pretrain_data_val_pairs['y']!=2,:].reset_index(drop=True).to_csv(os.path.join(args.pretrain_outdir_2class, 'val_pairs.txt'), sep='\t', index=None)
