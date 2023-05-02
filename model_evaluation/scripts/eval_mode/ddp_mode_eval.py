@@ -40,8 +40,8 @@ class DDP_Mode:
     def _load_data(self, use_random: bool=True):
 
         if use_random:
-            self.test_data = pd.read_csv(os.path.join(self.data_path, 'test_pairs.txt'), sep='\t', header=0)
-            # self.random_data = pd.read_csv(os.path.join(self.data_path, 'random_pairs.txt'), sep='\t', header=0)
+            # self.test_data = pd.read_csv(os.path.join(self.data_path, 'test_pairs.txt'), sep='\t', header=0)
+            self.random_data = pd.read_csv(os.path.join(self.data_path, 'random_pairs.txt'), sep='\t', header=0)
             self.random_data_list = []
             ten_times_random_data_dir = os.path.join(self.data_path, '10times_random_pairs')
             for random_data_file in sorted(os.listdir(ten_times_random_data_dir), key=lambda x: int(x.replace('.txt','').split('_')[-1])):
@@ -510,6 +510,11 @@ class DDP_Mode:
             
             ## calculate probability for test data
             test_probas, test_labels = _generate_probas_and_label(model, test_loader, test_batch, init_emb, self.device)
+            # check_pairs = {(x[0],x[1]):1 for x in self.test_data.to_numpy() if x[2] != 2}
+            # saved_index = [index for index, (source, target, y) in enumerate(test_data.to_numpy()) if (source, target) in check_pairs]
+            # test_data = test_data.reset_index(drop=True).loc[saved_index,:].reset_index(drop=True)
+            # test_probas = test_probas[saved_index]
+            # test_labels = test_labels[saved_index]
             test_preds = np.argmax(test_probas, axis=1)
 
             acc = self.calculate_accuracy(test_preds, test_labels)

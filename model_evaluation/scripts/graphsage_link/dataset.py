@@ -28,7 +28,7 @@ class Dataset(InMemoryDataset):
         self.logger = logger
         root = os.path.join(data_path, 'graphsage_link', 'ProcessedDataset')
         if not os.path.exists(root):
-            os.mkdirs(root)
+            os.makedirs(root)
 
         super(Dataset, self).__init__(root, transform, pre_transform)
 
@@ -53,7 +53,7 @@ class Dataset(InMemoryDataset):
         return init_embs
     
     def process(self):
-        ## load graph data
+        # ## load graph data
         raw_edges = pd.read_csv(os.path.join(self.data_path,'graph_edges.txt'), sep='\t', header=0)
         raw_edges = raw_edges[['source','target']].drop_duplicates().reset_index(drop=True)
         all_nodes = set()
@@ -76,8 +76,10 @@ class Dataset(InMemoryDataset):
         val_pairs = val_pairs.loc[val_pairs['y']!=2,:].reset_index(drop=True)
         test_pairs = pd.read_csv(os.path.join(self.data_path, 'test_pairs.txt'), sep='\t', header=0)
         test_pairs = test_pairs.loc[test_pairs['y']!=2,:].reset_index(drop=True)
-        random_pairs = pd.read_csv(os.path.join(self.data_path, 'random_pairs.txt'), sep='\t', header=0)
-
+        random_pairs_list = []
+        ten_times_random_data_dir = os.path.join(self.data_path, '10times_random_pairs')
+        for random_data_file in sorted(os.listdir(ten_times_random_data_dir), key=lambda x: int(x.replace('.txt','').split('_')[-1])):
+            random_pairs_list += [pd.read_csv(os.path.join(ten_times_random_data_dir, random_data_file), sep='\t', header=0)]
 
         # seed random state from time
         random_state2 = np.random.RandomState(int(time.time()))
@@ -166,33 +168,36 @@ class Dataset(InMemoryDataset):
 
                 
         ## split random pair set according to the given batch size
-        N = random_pairs.shape[0]//(self.batch_size * 3)
-        # Sets up 10-fold cross validation set
-        cv2 = ms.StratifiedKFold(n_splits=N, random_state=random_state2, shuffle=True)    
-        random_batch = []
-        try:
-            os.mkdir(os.path.join(self.processed_dir, 'random_loaders'))
-        except FileExistsError:
-            pass
-        for _, index in cv2.split(np.array(list(random_pairs.index)), np.array(random_pairs['y'])):
-            random_batch += [random_pairs.loc[list(index),:].reset_index(drop=True)]
+        random_batch_list = []
+        for partition, random_pairs in enumerate(random_pairs_list):
+            N = random_pairs.shape[0]//(self.batch_size * 3)
+            # Sets up 10-fold cross validation set
+            cv2 = ms.StratifiedKFold(n_splits=N, random_state=random_state2, shuffle=True)    
+            random_batch = []
+            try:
+                os.makedirs(os.path.join(self.processed_dir, 'random_loaders', str(partition)))
+            except FileExistsError:
+                pass
+            for _, index in cv2.split(np.array(list(random_pairs.index)), np.array(random_pairs['y'])):
+                random_batch += [random_pairs.loc[list(index),:].reset_index(drop=True)]
 
-        self.logger.info("generating batches for random pair set")
-        for i in trange(len(random_batch)):
+            random_batch_list += [random_batch]
 
-            batch_data = random_batch[i]
-            data_set = set()
-            data_set.update(set(batch_data.source))
-            data_set.update(set(batch_data.target))
-            data_idx=torch.tensor(list(map(entity2id.get, data_set)), dtype=torch.int32) - 1
-            for _, n_id, adjs in NeighborSampler(data.edge_index, node_idx=data_idx, sizes=self.layer_size, batch_size=len(data_idx), shuffle=False, num_workers=self.worker):
-                adjs = [(adj.edge_index,adj.size) for adj in adjs]
-                loader = (n_id, adjs)
-            filename = 'random_loader' + '_' + str(i) + '.pkl'
-            with open(os.path.join(self.processed_dir, 'random_loaders', filename), 'wb') as output:
-                pickle.dump(loader, output)
+            self.logger.info("generating batches for random pair set")
+            for i in trange(len(random_batch)):
+                batch_data = random_batch[i]
+                data_set = set()
+                data_set.update(set(batch_data.source))
+                data_set.update(set(batch_data.target))
+                data_idx=torch.tensor(list(map(entity2id.get, data_set)), dtype=torch.int32) - 1
+                for _, n_id, adjs in NeighborSampler(data.edge_index, node_idx=data_idx, sizes=self.layer_size, batch_size=len(data_idx), shuffle=False, num_workers=self.worker):
+                    adjs = [(adj.edge_index,adj.size) for adj in adjs]
+                    loader = (n_id, adjs)
+                filename = 'random_loader' + '_' + str(i) + '.pkl'
+                with open(os.path.join(self.processed_dir, 'random_loaders', str(partition), filename), 'wb') as output:
+                    pickle.dump(loader, output)
 
-        train_val_test_random = [train_batch, val_batch, test_batch, random_batch]
+        train_val_test_random = [train_batch, val_batch, test_batch, random_batch_list]
         
         with open(os.path.join(self.processed_dir, 'train_val_test_random.pkl'), 'wb') as output:
             pickle.dump(train_val_test_random, output)
@@ -211,7 +216,7 @@ class Dataset(InMemoryDataset):
         test_loaders_path = sorted(glob(os.path.join(self.processed_dir, 'test_loaders', '*.pkl')), key=lambda item: int(item.split('_')[-1].split('.')[0]))
         return DataLoader(eval_utilities.DataWrapper(test_loaders_path), batch_size=1, shuffle=False, num_workers=self.worker)
 
-    def get_random_loader(self):
-        random_loaders_path = sorted(glob(os.path.join(self.processed_dir, 'random_loaders', '*.pkl')), key=lambda item: int(item.split('_')[-1].split('.')[0]))
+    def get_random_loader(self, index):
+        random_loaders_path = sorted(glob(os.path.join(self.processed_dir, 'random_loaders', str(index), '*.pkl')), key=lambda item: int(item.split('_')[-1].split('.')[0]))
         return DataLoader(eval_utilities.DataWrapper(random_loaders_path), batch_size=1, shuffle=False, num_workers=self.worker)
 
