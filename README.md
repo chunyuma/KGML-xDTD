@@ -80,12 +80,12 @@ Due to the drugbank license limitation, we cannot directly provide the `drugbank
 
 ---
 
-## Data Preprocessing (skip it if you need to train the KGML-xDTD model from scratch)
+## Data Preprocessing (skip it if you don't need to train the KGML-xDTD model from scratch)
 Pleaase follow the steps 1-4 within `1_data_preprocessing.sh` to do data pre-processing. These steps may need a few hours. Note that the step 3 needs user to get a drugbank academic license to download the `drugbank.xml` file and then put it into the './data' folder.
 
 ---
 
-## Model training (skip it if you need to train the KGML-xDTD model from scratch)
+## Model training (skip it if you don't need to train the KGML-xDTD model from scratch)
 Pleaase follow the steps 5-11 within `2_model_training.sh` to do model training. These steps may need a few days. These model training steps include the node-attribute embedding generation (step5) via [PubMedBert](https://arxiv.org/abs/2007.15779) model, [GraphSage](https://arxiv.org/abs/1706.02216) embedding generation (step6-7) via [its official source code](https://github.com/williamleif/GraphSAGE), Random Forest model training, and [Adversarial ActorCritic model](https://www.microsoft.com/en-us/research/uploads/prod/2020/05/sigir_RLRec_camera_ready.pdf) (combined with reward shaping strategy and "demonstration paths"). Note that running GraphSage with its official source code needs to switch to `graphsage_p2.7env` conda environment via command `conda activate graphsage_p2.7env`.
 
 ---
