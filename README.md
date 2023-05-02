@@ -26,7 +26,7 @@ zenodo_get --doi=10.5281/zenodo.7582233
 ```
 Note we provide the associated description of each dataset and software downloaded via this step on [Zenodo](https://zenodo.org/record/7582233). Some datasets are large, so the downloading process needs to take a while.
 
-3. Set up the local neo4j database by the following steps:
+4. Set up the local neo4j database by the following steps:
 ```Shell
 ## assume step 2 has been implemented
 tar zxvf neo4j-community-3.5.26.tar.gz
