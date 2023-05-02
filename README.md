@@ -2,22 +2,16 @@
 
 ## Pre-Setting
 
-1. Please install [conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) and install a tool [zenodo-get](https://zenodo.org/record/1261813/) using the command `pip install zenodo-get`
+1. Please install [conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html)
 
-2. Download relevant data and software from Zenodo using the command below:
-```Shell
-zenodo_get --doi=10.5281/zenodo.7582233
-```
-Note we provide the associated description of each dataset and software downloaded via this step on [Zenodo](https://zenodo.org/record/7582233). Some datasets are large, so the downloading process needs to take a while.
-
-3. Set up the local neo4j database by the following steps:
+2. Set up the local neo4j database by the following steps:
 ```Shell
 ## assume step 2 has been implemented
 tar zxvf neo4j-community-3.5.26.tar.gz
 rm neo4j-community-3.5.26.tar.gz
 ```
 
-4. Please install the relevant conda environments by the following commands:
+3. Please install the relevant conda environments by the following commands:
 ```Shell
 ## construct two conda environements
 conda env create -f envs/graphsage_p2.7env.yml
@@ -32,6 +26,13 @@ CUDA_VERSION='cu113' ## check version by executing "python -c 'import torch; pri
 pip install torch-scatter==2.0.9 torch-sparse==0.6.12 -f https://data.pyg.org/whl/torch-${TORCH_VERSION}+${CUDA_VERSION}.html
 pip install torch-geometric==2.0.3
 ```
+
+4. Download relevant data and software from Zenodo using the command below:
+```Shell
+zenodo_get --doi=10.5281/zenodo.7582233
+```
+Note we provide the associated description of each dataset and software downloaded via this step on [Zenodo](https://zenodo.org/record/7582233). Some datasets are large, so the downloading process needs to take a while.
+
 5. Please install OpenKE PyTorch Version by the following commands:
 ```Shell
 ## Clone the OpenKE-PyTorch branch
