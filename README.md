@@ -29,8 +29,8 @@ conda activate main_env
 ## install pytorch geometric (it might take some time, so you don't need to install it if you don't try to run the baseline models)
 TORCH_VERSION=1.10.2 ## check version by executing "python -c 'import torch; print(torch.__version__)'"
 CUDA_VERSION='cu113' ## check version by executing "python -c 'import torch; print(torch.version.cuda)'"
-pip install torch-scatter torch-sparse -f https://data.pyg.org/whl/torch-${TORCH_VERSION}+${CUDA_VERSION}.html
-pip install torch-geometric
+pip install torch-scatter==2.0.9 torch-sparse==0.6.12 -f https://data.pyg.org/whl/torch-${TORCH_VERSION}+${CUDA_VERSION}.html
+pip install torch-geometric==2.0.3
 ```
 5. Please install OpenKE PyTorch Version by the following commands:
 ```Shell
@@ -131,11 +131,11 @@ xdtd = KGML_xDTD(args, data_path, model_path)
 xdtd.predict_single_ddp(drug_name='Eptacog Alfa', disease_name='Hemophilia B')
 ## predict treatment probabilities for a list of drug-diseae pairs
 xdtd.predict_ddps(drug_disease_name_list=[('Eptacog Alfa','Hemophilia B'),('Factor VIIa','Hemophilia B'),('Thrombin','Hemophilia B')])
-## predict top N potential diseases that could be treated by a given drug
+## predict top 10 potential diseases that could be treated by a given drug
 xdtd.predict_top_N_diseases(drug_name='Eptacog Alfa', N=10)
-## predict top N potential drugs that could be used to treat a given disease
+## predict top 10 potential drugs that could be used to treat a given disease
 xdtd.predict_top_N_drugs(disease_name='Hemophilia B', N=10)
-## predict top M potential KG-based MOA paths for explaining the treatment relationship of a single drug-diseae pair
+## predict top 10 potential KG-based MOA paths for explaining the treatment relationship of a single drug-diseae pair
 xdtd.predict_top_M_moa_paths(drug_name='Eptacog Alfa', disease_name='Hemophilia B', M=10)
 ```
 

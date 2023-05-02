@@ -20,6 +20,7 @@ dependencies:
   - nltk
   - pattern
   - httpx
+  - pygraphviz=1.10
   - pip:
     - beautifulsoup4
     - biopython
