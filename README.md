@@ -93,14 +93,37 @@ Pleaase follow the steps 5-11 within `2_model_training.sh` to do model training.
 ## Model Inference
 Before doing model inference, plesae make sure the steps 1-6 described in 'Pre-Setting' have been executed and download the trained models from Zenodo via the following commands:
 ```
+current_path=$(pwd)
 cd ./model_evaluation
 ## download trained model and relevant data
-zenodo_get --doi=10.5281/zenodo.7653456
+# download trained model
+curl --cookie zenodo-cookies.txt "https://zenodo.org/record/7888629/files/models.tar.gz?download=1" --output models.tar.gz
+# download relevant data
+curl --cookie zenodo-cookies.txt "https://zenodo.org/record/7888629/files/data.tar.gz?download=1" --output data.tar.gz
+# download graphsage_link model data (skip it if you don't need to replicate the results in paper)
+curl --cookie zenodo-cookies.txt "https://zenodo.org/record/7888629/files/graphsage_link.tar.gz?download=1" --output graphsage_link.tar.gz
 ## uncompress files
 tar zxvf models.tar.gz
 rm models.tar.gz
 tar zxvf data.tar.gz
 rm data.tar.gz
+if [ -e "graphsage_link.tar.gz" ]; then
+    tar zxvf graphsage_link.tar.gz
+    rm graphsage_link.tar.gz
+    mv graphsage_link ./data
+    cd ./data/graphsage_link/ProcessedDataset/processed/
+    tar zxvf graphsage_link_test_loaders.tar.gz
+    rm graphsage_link_test_loaders.tar.gz
+    cd ./random_loaders
+    for file in `ls *`; do
+        tar zxvf $file
+        rm $file
+    done
+else
+    echo "No 'graphsage_link.tar.gz' file detected. Skip it!"
+fi
+cd ${current_path}
+echo "Download completed!!"
 ```
 
 We provide an example below to show how to use KGML-xDTD model framework within `python` environment:
@@ -141,7 +164,7 @@ xdtd.predict_top_M_moa_paths(drug_name='Eptacog Alfa', disease_name='Hemophilia 
 ```
 
 ### Evaluation
-Please run the following command to replicate the model comparison reported in our paper (Table2 and Table3) based on the `test` dataset. You can choose to run a few particular models by specifying them via the parameter `models`. Note that the evaulation of some models (e.g. SVM) are time-consuming.
+Please run the following command to replicate the model comparison reported in our paper (Table2 and Table3) based on the `test` dataset. You can choose to run a few particular models by specifying them via the parameter `models`. Note that the evaulation of some models (e.g. graphsage_link, SVM) are time-consuming.
 ```Shell
 ## set working directory
 work_folder=$(pwd)
