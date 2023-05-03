@@ -92,7 +92,7 @@ Pleaase follow the steps 5-11 within `2_model_training.sh` to do model training.
 
 ## Model Inference
 Before doing model inference, plesae make sure the steps 1-6 described in 'Pre-Setting' have been executed and download the trained models from Zenodo via the following commands:
-```
+```Shell
 current_path=$(pwd)
 cd ./model_evaluation
 ## download trained model and relevant data
