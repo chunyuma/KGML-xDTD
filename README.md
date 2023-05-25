@@ -1,7 +1,6 @@
 # Code for Paper: "KGML-xDTD: A Knowledge Graph-based Machine Learning Framework for Drug Treatment Prediction and Mechanism Description"
 
 ## Pre-Setting
-
 1. Please install [conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html)
 
 2. Please install the relevant conda environments by the following commands:
