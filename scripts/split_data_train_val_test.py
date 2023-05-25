@@ -82,7 +82,7 @@ def split_df_into_train_val_test(df, train_val_test_size, expert_demonstration_t
 
         ## split tp_pairs_in_expert into train set, val set and test set
         count = tp_pairs_in_expert['source'].value_counts()
-        unique_temp = set(count.reset_index().loc[count.reset_index()['source']==1,'index'])
+        unique_temp = set(count.reset_index().loc[count.reset_index()['count']==1,'source'])
         train_tp_pairs_in_expert_1 = tp_pairs_in_expert.loc[tp_pairs_in_expert['source'].isin(unique_temp),['source','target']].reset_index(drop=True)
         rest_train_tp_pairs_in_expert = tp_pairs_in_expert.loc[~tp_pairs_in_expert['source'].isin(unique_temp),['source','target']].reset_index(drop=True)
         pad_tp_size = math.ceil(len(tp_pairs_in_expert) * train_val_test_size[0]) - len(train_tp_pairs_in_expert_1)
@@ -105,7 +105,7 @@ def split_df_into_train_val_test(df, train_val_test_size, expert_demonstration_t
 
         ## split tp_pairs_not_in_expert into train set, val set and test set
         count = tp_pairs_not_in_expert['source'].value_counts()
-        unique_temp = set(count.reset_index().loc[count.reset_index()['source']==1,'index'])
+        unique_temp = set(count.reset_index().loc[count.reset_index()['count']==1,'source'])
         train_tp_pairs_not_in_expert_1 = tp_pairs_not_in_expert.loc[tp_pairs_not_in_expert['source'].isin(unique_temp),['source','target']].reset_index(drop=True)
         rest_train_tp_pairs_not_in_expert = tp_pairs_not_in_expert.loc[~tp_pairs_not_in_expert['source'].isin(unique_temp),['source','target']].reset_index(drop=True)
         pad_tp_size = math.ceil(len(tp_pairs_not_in_expert) * train_val_test_size[0]) - len(train_tp_pairs_not_in_expert_1)
@@ -134,7 +134,7 @@ def split_df_into_train_val_test(df, train_val_test_size, expert_demonstration_t
 
         ## split triples based on the ratio of train, valid and test sets
         count = tn_pairs['source'].value_counts()
-        unique_temp = set(count.reset_index().loc[count.reset_index()['source']==1,'index'])
+        unique_temp = set(count.reset_index().loc[count.reset_index()['count']==1,'source'])
         train_tn_pairs_1 = tn_pairs.loc[tn_pairs['source'].isin(unique_temp),['source','target']].reset_index(drop=True)
         rest_train_tn_pairs = tn_pairs.loc[~tn_pairs['source'].isin(unique_temp),['source','target']].reset_index(drop=True)
         pad_tp_size = math.ceil(len(tn_pairs) * train_val_test_size[0]) - len(train_tn_pairs_1)
