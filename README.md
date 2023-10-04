@@ -5,9 +5,12 @@
 
 2. Please install the relevant conda environments by the following commands:
 ```Shell
+## install mamba
+conda install -c conda-forge mamba
+
 ## construct two conda environements
-conda env create -f envs/graphsage_p2.7env.yml
-conda env create -f envs/main_env.yml
+mamba env create -f envs/graphsage_p2.7env.yml
+mamba env create -f envs/main_env.yml
 
 ## activiate the 'main_env' conda environment
 conda activate main_env
