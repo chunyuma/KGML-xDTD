@@ -99,11 +99,11 @@ current_path=$(pwd)
 cd ./model_evaluation
 ## download trained model and relevant data
 # download trained model
-curl --cookie zenodo-cookies.txt "https://zenodo.org/record/7888629/files/models.tar.gz?download=1" --output models.tar.gz
+curl --cookie zenodo-cookies.txt "https://zenodo.org/records/7888629/files/models.tar.gz?download=1" --output models.tar.gz
 # download relevant data
-curl --cookie zenodo-cookies.txt "https://zenodo.org/record/7888629/files/data.tar.gz?download=1" --output data.tar.gz
+curl --cookie zenodo-cookies.txt "https://zenodo.org/records/7888629/files/data.tar.gz?download=1" --output data.tar.gz
 # download graphsage_link model data (skip it if you don't need to replicate the results in paper)
-curl --cookie zenodo-cookies.txt "https://zenodo.org/record/7888629/files/graphsage_link.tar.gz?download=1" --output graphsage_link.tar.gz
+curl --cookie zenodo-cookies.txt "https://zenodo.org/records/7888629/files/graphsage_link.tar.gz?download=1" --output graphsage_link.tar.gz
 ## uncompress files
 tar zxvf models.tar.gz
 rm models.tar.gz
