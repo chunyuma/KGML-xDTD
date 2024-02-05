@@ -214,7 +214,7 @@ if __name__ == '__main__':
     p_expert_paths.columns = ['drugbankid', 'subject', 'object']
 
     ## query molepro (Molecular Data Provider) API
-    if not os.path.exists(os.path.join(args.output_folder, 'expert_path_files', 'molepro_df_backup.txt')):
+    if not os.path.exists(os.path.join(args.data_dir, args.outdir_name, 'molepro_df_backup.txt')):
         # api_res = requests.get(f'{args.molepro_api_link}/meta_knowledge_graph')
         # if api_res.status_code == 200:
         #     molepro_meta_kg = api_res.json()
