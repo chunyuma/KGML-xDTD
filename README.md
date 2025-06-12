@@ -1,3 +1,10 @@
+- [Table of contents](#code-for-paper---kgml-xdtd--a-knowledge-graph-based-machine-learning-framework-for-drug-treatment-prediction-and-mechanism-description-)
+  * [Pre-Setting](#pre-setting)
+  * [Data Preprocessing](#data-preprocessing)
+  * [Model training](#model-training)
+  * [Model Inference](#model-inference)
+    + [Evaluation](#evaluation)
+
 # Code for Paper: "KGML-xDTD: A Knowledge Graph-based Machine Learning Framework for Drug Treatment Prediction and Mechanism Description"
 
 ## Pre-Setting
